@@ -1,0 +1,183 @@
+#!/bin/sh
+
+gmtset ANNOT_FONT_SIZE 10
+gmtset LABEL_FONT_SIZE 10
+gmtset HEADER_FONT_SIZE 12
+gmtset PAPER_MEDIA a4+
+gmtset LABEL_OFFSET 0.1
+
+
+output=Fig2_CaCO3_flux_model_obs_sediments_v2.eps
+SO_fronts_path='southern_ocean_fronts/'
+
+#paste together the depths and the CaCO3 flux data from CESM
+
+paste GCB_CaCO3_flux_in_profile.txt depths.txt > infile.txt
+
+gmtset BASEMAP_FRAME_RGB white
+
+psbasemap -R0/27/0/5500 -JX8/-9 -B0 -K -P -Y4 > $output
+
+gmtset BASEMAP_FRAME_RGB black
+gmtset GRID_PEN_PRIMARY 0.25p,0
+gmtset GRID_PEN_SECONDARY 0.5p,0
+gmtset TICK_PEN 0.5p,0
+
+#make shaded area with st dev
+#left part (lower)
+paste GCB_CaCO3_flux_in_profile.txt GCB_CaCO3_flux_in_profile_stdev.txt depths.txt > tmp.txt
+
+awk '{print $3*1, $1*1-$2*1}' tmp.txt > tmp2.txt
+awk '{print $3*1, $1*1+$2*1}' tmp.txt > tmp3.txt
+
+sort -rn tmp3.txt > tmp.txt
+
+cat tmp2.txt tmp.txt > stdev.txt
+
+
+psbasemap -R0/27/0/5500 -JX8/-9 -Ba5f1:"CaCO@-3@- flux (g CaCO@-3@- m@+-2@+ y@+-1@+)":/a500f100:"Depth (m)":nWeS -K -P -O >> $output
+
+cesm_mean='68/180/228'
+cesm_range='193/248/247'
+
+awk '{print $2, $1}' stdev.txt | psxy -R -J -O -P -K -L -G$cesm_range -N >> $output
+
+awk '{print $1, $2}' infile.txt | psxy -R -J -O -P -K -W3p,$cesm_mean >> $output
+
+
+sed_trap_color='0'
+
+#Hernandez et al., 2020 SOTS site g CaCO3 per m2 per year and SAM site (last point) SAZ
+psxy -R -JX -Sc0.2 -G$sed_trap_color -O -P -K <<END>> $output
+14.5 1000
+16 2000
+17 3800
+14 1500
+END
+
+
+#Wilks et al., 2017 g CaCO3 per m2 per year SAZ
+psxy -R -JX -Sc0.2 -G$sed_trap_color -O -P -K <<END>> $output
+13.1 500
+END
+
+#Trull et al., 2001 g CaCO3 per m2 per year SAZ
+psxy -R -JX -Sc0.2 -G$sed_trap_color -O -P -K <<END>> $output
+8.6 2050
+6.8 3850
+13.1 3080
+END
+
+#Trull et al., 2001 g CaCO3 per m2 per year PFZ
+psxy -R -JX -Sc0.2 -W1p,$sed_trap_color -O -P -K <<END>> $output
+4.2 830
+2.9 1530
+END
+
+#Salter et al., 2014 g CaCO3 per m2 per year PFZ
+psxy -R -JX -Sc0.2 -W1p,$sed_trap_color -O -P -K <<END>> $output
+4.6 2000
+6.4 3000
+0.70 3000
+END
+
+#Northcote and Niel, 2005 g CaCO3 per m2 per year SAZ
+psxy -R -JX -Sc0.2 -G$sed_trap_color -O -P -K <<END>> $output
+6.23 415
+4.65 400
+END
+
+#Wefer and Fischer, 2000 g CaCO3 per m2 per year PFZ
+psxy -R -JX -Sc0.2 -W1p,$sed_trap_color -O -P -K <<END>> $output
+10.5 700
+END
+
+#Fischer et al, 2002 g CaCO3 per m2 per year PFZ
+psxy -R -JX -Sc0.2 -W1p,$sed_trap_color -O -P -K <<END>> $output
+10.3 614
+7.5 3196
+1.3 654
+0.33 3219
+1.67 636
+0.42 3056
+1.08 687
+2.5 3110
+END
+
+#Honjo et al, 2000 g CaCO3 per m2 per year SAZ
+psxy -R -JX -Sc0.2 -G$sed_trap_color -O -P -K <<END>> $output
+6.8 1981
+11.8 982
+END
+
+#Honjo et al, 2000 g CaCO3 per m2 per year PFZ
+psxy -R -JX -Sc0.2 -W1p,$sed_trap_color -O -P -K <<END>> $output
+12.8 1003
+END
+
+#Manno et al., 2018 g CaCO3 per m2 per year SAZ
+psxy -R -JX -Sc0.2 -Gblack -O -P -K <<END>> $output
+8.76 1500
+16.02 2000
+END
+
+
+
+echo -3 -250 12 0 1 BL 'a) CaCO@-3@- fluxes' | pstext -R -O -P -J -K -N >> $output
+
+##LEGEND##########################################################################
+pslegend -R -JX -Dx0/-1.7/8/1.8/TL -C0.15/0.15 -F0.5p -L1.2 -O -P -K << END >> $output
+G -0.1
+S 0.1 s 0.2  $cesm_mean - 0.5 Mean CESM CaCO@-3@- flux in GCB region
+#@%12%\163@-\161@-@%% 26 to 27 outcrop
+S 0.1 s 0.3  $cesm_range - 0.5 CESM CaCO@-3@- flux standard deviation
+S 0.1 c 0.2  white   1p,$sed_trap_color 0.5 CaCO@-3@- fluxes from sediment traps in the PFZ
+S 0.1 c 0.2  $sed_trap_color - 0.5 CaCO@-3@- fluxes from sediment traps in the SAZ
+END
+
+############################################################
+echo 35 -250 12 0 1 BL 'b) Seafloor sediments' | pstext -R -O -P -J -K -N >> $output
+#sediment map
+
+reg=-180/180/-90/-30 #20deg/cm
+proj=S0/-90/9c
+
+#Dutkiewitz et al., 2015 seafloor sediments files
+infile='seabed_lithology_v1.nc'
+
+#makecpt -Cglobe -T1/12/1 > sediment.cpt
+
+cpt1=sediment.cpt
+
+psbasemap -R$reg -J$proj -B0 -P -K -X9 -Y-0.5 -O >> $output
+
+grdimage -R -O -P $infile -J -C$cpt1 -E300 -K >> $output
+
+#add southern ocean fronts
+#Natalie's PF
+awk '{print $1, $2}' $SO_fronts_path'PF.txt' | psxy -W1p,0 -R -J -O -P -K >> $output
+#subantactic front
+awk '{print $2, $1}' $SO_fronts_path'AS_SAF.txt' | psxy -W1p,-  -R -J -O -P -K >> $output
+awk '{print $2, $1}' $SO_fronts_path'IS_SAF.txt' | psxy -W1p,-  -R -J -O -P -K >> $output
+awk '{print $2, $1}' $SO_fronts_path'PS_SAF.txt' | psxy -W1p,-  -R -J -O -P -K >> $output
+#north subtropical front
+awk '{print $1, $2}' stf.txt | psxy -W1p,-.  -R -J -O -P -K >> $output
+
+pscoast -R -O -P -J -A100000 -Gwhite -W1p,100 -K >> $output
+echo -158 -62 12 0 1 BL "AZ" | pstext -R -O -P -J -K >> $output
+echo -158 -52 12 0 1 BL "PFZ" | pstext -R -O -P -J -K >> $output
+echo -150 -40 12 0 1 BL "SAZ" | pstext -R -O -P -J -K >> $output
+
+
+##LEGEND##########################################################################
+pslegend -R -JX -Dx0.5/-1.2/8/1.8/TL -C0.15/0.15 -Fthin -L1.2 -O -P << END >> $output
+G -0.1
+S 0.1 s 0.3  45/200/249   0.5p,0 0.5 Calcareous sediments
+S 0.1 s 0.3  85/142/142     0.5p,0 0.5 Calcareous/siliceous mixed sediments
+S 0.1 s 0.3  176/206/108     0.5p,0 0.5 Siliceous sediments
+S 0.1 s 0.3  235/204/149     0.5p,0 0.5 Gravel, sand, silt, clay, or volcanic
+END
+
+
+
+epstopdf $output

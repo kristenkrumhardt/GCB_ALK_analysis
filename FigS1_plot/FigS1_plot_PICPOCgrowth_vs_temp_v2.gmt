@@ -1,0 +1,433 @@
+#!/bin/sh
+
+gmtset ANNOT_FONT_SIZE 12
+gmtset LABEL_FONT_SIZE 12
+gmtset HEADER_FONT_SIZE 12
+gmtset PAPER_MEDIA a4+
+gmtset LABEL_OFFSET 0.1
+
+
+output=FigS1growthPICPOC_vs_temp2.eps
+
+Clep_color=190
+EhuxA_color=190
+EhuxBC_color=190
+Goc_color=190
+Cpel_color=190
+EhuxR_color=190
+Spul_color=190
+EhuxBCSOc_color=red
+Ehuxmix_color=190
+
+
+
+
+
+
+
+
+######## PIC/POC vs. temp-----------------------------------------------------------------------------
+
+
+psbasemap -R0/30/0/4 -JX9/8 -Ba5f1:"Temperature (\260C)":/a1f0.2:"r@-PIC/POC@-":nWeS -K -P -Y2 > $output
+
+#echo 1 3.7 12 0 0 BL "r@-CaCO3/Corg@- vs. Temp" | pstext -R -J -O -K -P >> $output
+#
+
+
+
+
+
+##plot line fit---------------------------
+#awk 'BEGIN{getline}{print $1, $2}' fit_line.dat | psxy -R -JX -W2p,- -O -P -K >> $output
+
+##-----------------------------------calculate LINEAR <11C fit-------------------
+
+m=0.104
+b=-0.108
+
+echo temp picpoc > fit_line2.dat
+##do the line fit ----------------
+for ((c=0; c<=106; c+=1))
+do
+echo $c | awk -v m=$m -v b=$b  '{print $1*0.1, m*($1*0.1) + b}' >> fit_line2.dat
+done
+
+##-----------------------------------calculate LINEAR <11C fit-------------------
+
+#y = 0.0001x^{3}
+
+echo temp picpoc > fit_line3.dat
+##do the line fit ----------------
+for ((c=0; c<=215; c+=1))
+do
+    echo $c | awk '{print $1*0.1, 0.0001*($1*0.1)^3}' >> fit_line3.dat
+done
+
+
+#---------------------------------------------------------------------------------------------------
+#--------------STUDIES that have intentially varied temp---------------------------------------------
+#------------------------Sett et al., 2014
+psxy -R -O -K -P -J -Sc0.1 -G$Goc_color <<END>> $output #G. oceanica
+25 1.916
+20 1.810
+15 1.653
+END
+
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color <<END>> $output #E hux A
+20 1.134
+15 0.857
+10 0.742
+END
+
+#-----------------------Feng et al., 2008
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color <<END>> $output #E hux A
+20 0.293
+24 0.313
+END
+
+#-----------------------Feng et al., 2016
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color <<END>> $output #E hux A
+4.032	0.218
+7.004	0.295
+11.050	0.796
+14.970	0.999
+20.017	0.793
+24.878	0.631
+END
+
+
+#---------------Fiorini et al., 2011
+
+#S. pulchra (at 416 ppm a 19C and 379 at 22C)
+psxy -R -J -O -K -P -Sc0.1 -G$Spul_color <<END>> $output
+19 0.20
+22 0.16
+END
+
+#-------------------------de Bodt et al., 2010-- I think it's overcalcified E hux A, but it wasn't labeled as such so I'm leaving it as A
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color <<END>> $output #E hux A
+13 2.22
+18 0.73
+END
+
+#--------------------------Rosas-Navarro et al., 2016
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color  <<END>> $output #E hux A RCC1710
+10 1.713
+15 1.411
+20 0.954
+25 1.162
+END
+
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color  <<END>> $output #E hux A RCC1252
+10 1.309
+15 1.153
+20 1.132
+25 1.208
+END
+
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color  <<END>> $output #E hux A IAN01
+15  1.033
+20  0.914
+25  1.133
+END
+
+#--------------------------------Milner et al., 2016
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color  <<END>> $output #E hux A, these are actually at two slightly different CO2 concs (15 deg at 387ppm and 20 deg at 409ppm)
+15  0.96
+20  0.91
+END
+
+#------------------------------van Bleijwijk et al., 1994 (only type A temp variation)
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color  <<END>> $output #E hux A
+10 0.58
+15 0.71
+END
+
+#------------------------------Langer et al., 2007, E hux A (PML B92/11)
+psxy -R -O -K -P -J -Sc0.1 -G$EhuxA_color  <<END>> $output #E hux A
+5 0.576
+11 0.578
+15 0.527
+20 0.511
+END
+
+#---------------------------Gerecht et al., 2014
+psxy -R -O -P -J -K -Sc0.1 -G$Cpel_color  <<END>> $output #C. pelagicus
+10 1.28
+15 0.54
+END
+
+
+
+
+
+
+########### other studies temp data --------------------------------------------
+
+#------ Rickaby et al., 2016, All cultures under ambient CO2 in 15C
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+15 1.96
+15 1.56
+15 1.03
+15 0.51
+15 1.80
+15 1.04
+END
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxBC_color <<END>> $output
+15 1.59
+END
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxR_color <<END>> $output
+15 0.84
+END
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+15 2.16
+15 2.74
+END
+
+
+#----- Blanco- Amerijieras et al., 2016; 19.15 deg C, ambient CO2
+# 3 E hux A strains: B92/11, M181CCMP88E, M184CCMP1A1, South Africa
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+19.15 0.23
+19.15 0.5
+19.15 0.12
+19.15 0.66
+END
+# 2 E hux B strains: RCC1258, RCC1212
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxBC_color <<END>> $output
+19.15 0.94
+19.15 0.54
+END
+# 2 E hux R strains: NZEH, AC492
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxR_color <<END>> $output
+19.15 0.43
+19.15 0.20
+END
+
+
+
+#------ Hoppe et al., 2011
+#170 umol m-2 s-1 on 16:8 at 15 deg C -- 227 at 12:12
+#RCC 1256 (A) estimates at 288 ppm & 379 ppm
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+15 0.98
+15 0.82
+END
+#E hux NZEH estimates at 369 ppm, 404 ppm, 336 ppm
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxR_color <<END>> $output
+15 1.04
+15 1.17
+15 1.06
+END
+
+#-------- Rouco et al., 2013
+#lower CO2 experiments at 258 ppm and higher at 552 ppm
+#E hux NZEH
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxR_color <<END>> $output
+19 0.928
+19 0.847
+END
+
+#---------Riebesell et al., 2000
+#use 331 and 491 ppm CO2 levels
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+15 0.928
+15 0.838
+END
+
+#----------------Iglesias-Rodriguez et al., 2008
+#E. hux R; use 306 and 501 ppm CO2 estimates
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxR_color <<END>> $output
+19 0.7627
+19 0.6751
+END
+
+#----------------Langer et al., 2006
+#Cleptoporus: 20 deg C, use 345 and 477 ppm CO2
+psxy -R -J -O -K -P -Sc0.1 -G$Clep_color <<END>> $output
+20 2.216
+20 2.049
+END
+#Cpelagicus: 17 deg C, use 345 ppm CO2
+psxy -R -J -O -K -P -Sc0.1 -G$Cpel_color <<END>> $output
+17 1.706
+END
+
+#--------------Langer et al., 2009
+#E hux A (1) AT 399 ppm/ E hux A (2) on 395 ppm
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+17 0.82
+20 0.8
+END
+#E hux B on 409 ppm
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxBC_color <<END>> $output
+20 0.82
+END
+#E hux R on 422 ppm
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxR_color <<END>> $output
+17 0.93
+END
+
+#------------Diner et al., 2015
+#2 kinds of C leptoporus - first at 425 ppm and second at 468 ppm CO2
+psxy -R -J -O -K -P -Sc0.1 -G$Clep_color <<END>> $output
+20 3.235
+20 0.597
+END
+
+
+#------------Muller et al., 2010
+#C braarudii at 260 ppm CO2
+psxy -R -J -O -K -P -Sc0.1 -G$Cpel_color <<END>> $output
+16 1
+END
+#E hux at 260 ppm CO2
+psxy -R -J -O -K -P -Sc0.1 -G$Ehuxmix_color <<END>> $output
+16 0.7
+END
+
+#---------------Fiorini et al., 2011 (both papers)
+# cultures at 160 umol m-2 s-1 on 12:12
+#C leptoporus (at 390 ppm)
+psxy -R -J -O -K -P -Sc0.1 -G$Clep_color <<END>> $output
+19 1.38
+END
+#E hux R (at 403 ppm)
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxR_color <<END>> $output
+19 0.52
+END
+#S. pulchra (at 416 ppm a 19C and 379 at 22C)
+psxy -R -J -O -K -P -Sc0.1 -G$Spul_color <<END>> $output
+19 0.2
+22 0.16
+END
+
+#---------------Langer and Benner 2009 (B92/11)
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+17 0.7
+17 0.8
+END
+
+#--------------Paasche 1998
+# 200 umol m-2 s-1 on 24:0 --> 400 on 12:12 (20 C; ambient CO2)
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+20 1.078
+END
+
+#--------------Rickaby et al., 2010
+#C braarudii (5 CO2 levels that fit into range: 262,335,364,420,497)
+psxy -R -J -O -K -P -Sc0.1 -G$Cpel_color <<END>> $output
+18 0.73
+18 0.77
+18 0.53
+18 0.41
+18 0.59
+END
+#G oceanica (5 CO2 levels that fit into range: 327, 371,421,451,498)
+psxy -R -J -O -K -P -Sc0.1 -G$Goc_color <<END>> $output
+18 0.93
+18 0.74
+18 0.70
+18 0.62
+18 0.61
+END
+
+#----------Sciandra et al., 2003
+# Ehux A at 404 ppm CO2
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+17 0.88
+END
+
+
+#-----------Zondervan et al., 2001
+# Ehux A on 24:0 150 umol m-2 s-1 ---> 300 on 12:12
+#do three estimate within CO2 range: 320, 459, 491 ppm
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+15 0.88
+15 0.73
+15 0.67
+END
+#G oceanica on 16:8 150 umol m-2 s-1 --> 200 on 12:12
+#do 2 estimates within CO2 range: 328, 465 ppm
+psxy -R -J -O -K -P -Sc0.1 -G$Goc_color <<END>> $output
+15 0.97
+15 0.77
+END
+
+#-------Jones et al., 2013, use "t2" values (acclimated)
+# E hux R grown at 395 ppm CO2
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxR_color <<END>> $output
+19 0.81
+END
+
+#--------------Lefebvre et al., 2012
+# E hux - 2 co2 estimates within range: 367, 308 ppm
+# Light at 450-500 umol -m2 s-1 on 16:8 , using midpoint 475--> 633.3
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+17 0.41
+17 0.64
+END
+
+#-------------Reigman et al., 2000 just use least P-limited (u = 0.63)
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+15 0.23
+END
+
+#--------------Muller et al., 2015
+# Ehux A o/c - 4 CO2 levels in acceptable range: 350, 380, 449, 479 ppm CO2
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxR_color <<END>> $output
+14 1.085
+14 1.172
+14 1.159
+14 1.22
+END
+# Ehux A - 4 CO2 levels in acceptable range: 294, 293, 422, 415 ppm CO2
+psxy -R -J -O -K -P -Sc0.1 -G$EhuxA_color <<END>> $output
+14 0.605
+14 0.68
+14 0.69
+14 0.8
+END
+# Ehux BC SOc - 2 CO2 levels in acceptable range:391, 419 ppm CO2
+psxy -R -J -O -K -P -Sc0.2 -G190 <<END>> $output
+14 0.227
+14 0.292
+END
+
+# Ehux BC SOc - 2 CO2 levels in acceptable range:391, 419 ppm CO2
+psxy -R -J -O -K -P -Sc0.2 -W1p,0 <<END>> $output
+14 0.227
+14 0.292
+END
+
+
+##plot line fit---------------------------
+awk 'BEGIN{getline}{print $1, $2}' fit_line2.dat | psxy -R -JX -W1p,- -O -P -K >> $output
+
+psxy -R -JX -W1p,- -O -P -K <<END>> $output
+11 1
+30 1
+END
+
+###plot line fit---------------------------
+awk 'BEGIN{getline}{print $1, $2}' fit_line3.dat | psxy -R -JX -W2p,0 -O -P -K >> $output
+
+psxy -R -JX -W2p,0 -O -P -K <<END>> $output
+21.5 1
+30 1
+END
+
+
+##LEGEND##########################################################################
+gmtset ANNOT_FONT_SIZE 10
+gmtset LABEL_FONT_SIZE 10
+pslegend -R -JX -Dx0.2/7.9/6/1/TL -C0.15/0.15 -F -L1.2 -O -P  << END >> $output
+G -0.1
+S 0.1 c 0.2  190       1p,0 0.5 @%2%E. huxleyi@%% B/C Southern Ocean
+S 0.1 c 0.1  190      - 0.5 Other morphotypes/species
+END
+
+
+
+epstopdf $output

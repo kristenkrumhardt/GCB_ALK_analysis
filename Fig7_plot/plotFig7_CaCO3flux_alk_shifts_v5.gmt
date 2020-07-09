@@ -1,0 +1,162 @@
+#!/bin/sh
+
+gmtset ANNOT_FONT_SIZE 12
+gmtset LABEL_FONT_SIZE 12
+gmtset HEADER_FONT_SIZE 12
+gmtset PAPER_MEDIA a4+
+gmtset LABEL_OFFSET 0.2
+gmtset ANNOT_OFFSET_PRIMARY 0.1
+gmtset ANNOT_OFFSET_SECONDARY 0.1
+
+output=Fig7_CaCO3fluxSAZ_Alk_shifts_v5.eps
+
+color=78/182/228
+color2=red
+
+psbasemap -R-15/15/-25/25 -JX10/10 -Ba5f1:"@%12%\104@%%CaCO@-3@- flux (g CaCO@-3@- m@+-2@+ y@+-1@+)":/a10f5:"@%12%\104@%% Mean alkalinity of upper ocean (@%12%\163@-\161@-@%% < 27.4; mmol m@+-3@+)":WS -K -P -Y17 > $output
+
+#add dashed lines
+psxy -R -J -O -P -K -W1p,- <<END>> $output
+-15 0
+15 0
+END
+psxy -R -J -O -P -K -W1p,- <<END>> $output
+0 -35
+0 35
+END
+
+
+#add data points
+psxy -R -J -O -P -K -Sc0.3 -G$color <<END>> $output
+-12.91 20.7
+-9.7 14.1
+0 0
+3.8 -6.4
+12.91 -20.7
+END
+
+
+echo -15 33.3 14 0 1 BL "a) Upper ocean alkalinity" | pstext -R -J -O -K -P -N >> $output
+#echo 2.5 19.7 12 0 1 BL "alkalinity" | pstext -R -J -O -K -P >> $output
+
+echo 0 0 12 0 0 BL "control" | pstext -R -J -O -K -P -G$color -D0.2/0.2 >> $output
+
+echo -5 16 24 -43.3 1 BL "@%12%\254@%%" | pstext -R -J -O -K -P >> $output
+echo -8.5 17.9 12 -43.3 0 BL "More Alk remains" | pstext -R -J -O -K -P >> $output
+echo -9 15.9 12 -43.3 0 BL "in upper ocean" | pstext -R -J -O -K -P >> $output
+
+
+echo 4 -14 24 -43 1 BL "@%12%\256@%%" | pstext -R -J -O -K -P >> $output
+echo 1 -5.5 12 -43 0 BL "More Alk in deep ocean" | pstext -R -J -O -K -P >> $output
+
+#add absolute alk gradient axes
+psbasemap -R-2.37/27.63/2343.1/2393.1 -JX10/10 -Ba5f1:"CaCO@-3@- flux (g CaCO@-3@- m@+-2@+ y@+-1@+)":/a10f5:"Mean alkalinity of upper ocean (@%12%\163@-\161@-@%% < 27.4; mmol m@+-3@+)":NE -K -P -O >> $output
+
+
+echo flux alk > fit_line.dat
+##do the line fit ----------------
+##### put in linear regression fit
+m=-1.58
+b=2388.18
+
+for (( flux = -2; flux <= 27; flux+=1 ))
+do
+echo $flux | awk -v m=$m -v b=$b  '{print $1, m*($1) + b}' >> fit_line.dat
+done
+
+awk 'BEGIN{getline}{print $1, $2}' fit_line.dat | psxy  -R -J -O -P -K -W2p,$color >> $output
+
+
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+
+#add little image of vertical separation
+
+gmtset ANNOT_FONT_SIZE 9
+gmtset LABEL_FONT_SIZE 9
+gmtset ANNOT_OFFSET_PRIMARY 0.05
+gmtset ANNOT_OFFSET_SECONDARY 0.1
+gmtset BASEMAP_TYPE plain
+gmtset TICK_LENGTH 0.1c
+
+#add little plot of lat vs. depth of sigma 27.4 isopycnal
+psbasemap -R-90/90/0/3 -JX2.7/-2.7 -Ba90f30:"Latitude":/a1f1:"Depth (km)":nSeW -P -O -K -Y1.4 -X1 >> $output
+
+awk 'BEGIN{getline}{print $1, $2*-0.001}' lat_depth_sigma274.txt > sigma274loc.dat
+
+awk '{print $1, $2}' sigma274loc.dat | psxy -R -J -O -P -L -G200 -K >> $output
+awk '{print $1, $2}' sigma274loc_top.dat | psxy -R -J -O -P -L -G230 -K >> $output
+
+
+awk '{print $1, $2}' sigma274loc2.dat | psxy -R -J -O -P -W0.3p,- -K >> $output
+echo 30 1 7 0 0 BL "27.4" | pstext -R -J -O -P -K -W255 >> $output
+echo 0 0.8 12 -90 0 BL "@%12%\256@%%" | pstext -R -J -O -P -K >> $output
+echo -20 0.5 10 0 0 BL "@%12%\104@%%Alk" | pstext -R -J -O -P -K >> $output
+echo -20 1.5 7 0 0 BL "@%12%\104@%%CaCO@-3@- flux" | pstext -R -J -O -P -K >> $output
+
+
+####################################################################
+## DIC accumlation plot
+####################################################################
+
+gmtset ANNOT_FONT_SIZE 12
+gmtset LABEL_FONT_SIZE 12
+gmtset ANNOT_OFFSET_PRIMARY 0.1
+gmtset ANNOT_OFFSET_SECONDARY 0.1
+
+
+
+psbasemap -R-15/15/-15/15 -JX10/10 -Ba5f1:"@%12%\104@%%CaCO@-3@- flux (g CaCO@-3@- m@+-2@+ y@+-1@+)":/a5f1:"@%12%\104@%% DIC accumulation rate (Tmol yr@+-1@+)":WS -K -P -Y-1.4 -X13 -O >> $output
+
+#add dashed lines
+psxy -R -J -O -P -K -W1p,- <<END>> $output
+-15 0
+15 0
+END
+psxy -R -J -O -P -K -W1p,- <<END>> $output
+0 -15
+0 15
+END
+
+
+#add data points
+psxy -R -J -O -P -K -Sc0.3 -G$color2 <<END>> $output
+-12.91 14
+-9.7 9
+0 0
+3.8 -5
+12.91 -13.8
+END
+
+
+echo -15 20 14 0 1 BL "b) Ocean carbon accumulation" | pstext -R -J -O -K -P -N >> $output
+#echo 2.5 11.8 12 0 1 BL "accumulation" | pstext -R -J -O -K -P >> $output
+
+echo 0 0 12 0 0 BL "control" | pstext -R -J -O -K -P -G$color2 -D0.2/0.2 >> $output
+
+echo flux dic_rate > fit_line.dat
+##do the line fit ----------------
+##### put in linear regression fit
+m=-0.95243
+b=-0.4517
+
+for (( flux = -14; flux <= 14; flux+=1 ))
+do
+echo $flux | awk -v m=$m -v b=$b  '{print $1, m*($1) + b}' >> fit_line.dat
+done
+
+awk 'BEGIN{getline}{print $1, $2}' fit_line.dat | psxy  -R -J -O -P -K -W2p,$color2 >> $output
+
+#add absolute axes
+psbasemap -R-2.37/27.63/8/38 -JX10/10 -Ba5f1:"CaCO@-3@- flux (g CaCO@-3@- m@+-2@+ y@+-1@+)":/a5f1:"DIC accumulation rate (Tmol yr@+-1@+)":NE -P -O >> $output
+
+
+
+#--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+
+
+
+
+
+epstopdf $output
